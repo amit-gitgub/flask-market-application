@@ -16,9 +16,10 @@ except requests.exceptions.Timeout as errt:
 except requests.exceptions.RequestException as err:
     print(err)
 #print(response.json())
+# Most important while working with Rest APi with Json...always work with Json object as below...response.json() give json object
 data = response.json()
-print(len(data))
-print(data[1])
+print(type(data))
+print(data)
 for i in range(0,len(data)):
     print(data[i]['name']['official'])
 
