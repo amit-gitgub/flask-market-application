@@ -12,4 +12,5 @@ dict = {'name':["aparna", "pankaj", "sudhir", "Geeku"],
 
 df1 = pd.DataFrame(dict)
 print(df1)
-
+sr = pd.Series(dict)
+print(sr)
