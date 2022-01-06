@@ -7,7 +7,9 @@ seperator in each element of that list. put everything  in a result and then pri
 res = requests.get("https://thecleverprogrammer.com/2021/01/14/python-projects-with-source-code/")
 fullText = res.content
 ab = bytes("https", 'utf-8')
+
 split = fullText.split()
+print(split)
 newList = []
 for data in split:
     if data.startswith(ab):
