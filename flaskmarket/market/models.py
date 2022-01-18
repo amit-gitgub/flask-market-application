@@ -39,6 +39,9 @@ class User(db.Model, UserMixin):
         # condition and return the True.
         return bcrypt.check_password_hash(self.password_hash, attempted_password)
 
+    def can_purchase(self, item_obj):
+        return item_obj.price <= self.budget
+
 
 class Items(db.Model):
     id = db.Column(db.Integer(), primary_key=True)

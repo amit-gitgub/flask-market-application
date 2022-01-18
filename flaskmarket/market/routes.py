@@ -1,9 +1,9 @@
 from market import app
-from flask import render_template, redirect, url_for, flash, get_flashed_messages
+from flask import render_template, redirect, url_for, flash, get_flashed_messages, request
 from market.models import Items, User
-from market.forms import RegisterForm, LoginForm
+from market.forms import RegisterForm, LoginForm, PurchaseItemForm
 from market import db
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 
 
 @app.route("/")
@@ -12,13 +12,31 @@ def home_page():
     return render_template('home.html')
 
 
-@app.route("/market")
+@app.route("/market", methods=['GET', 'POST'])
 # Below decorator ensure that user is logged in before accessing market page...We can force unauthorized user to
 # to land on login page by making change in __init__ file in login manager
 @login_required
 def market_page():
-    items = Items.query.all()
-    return render_template('market.html', items=items)
+    purchase_form = PurchaseItemForm()
+    if request.method == 'POST':
+        item_name = request.form.get('purchased_item')
+        item_object = Items.query.filter_by(name=item_name).first()
+        if item_object:
+            if current_user.can_purchase(item_object):
+                item_object.owner = current_user.id
+                current_user.budget -= item_object.price
+                db.session.commit()
+                flash(f'Congrats! You have successfully purchased {item_name} for {item_object.price}$', category='success')
+            else:
+                flash(f"Sorry you don't have sufficient money to buy {item_name}.", category='danger')
+        return redirect(url_for('market_page'))
+
+    # If you want to remove the items from the market after purchasing by any owner then enable the below code
+    if request.method == 'GET':
+        items = Items.query.filter_by(owner=None)
+        #items = Items.query.all()
+
+        return render_template('market.html', items=items, purchase_form=purchase_form)
 
 
 @app.route("/register", methods=['GET', 'POST'])
