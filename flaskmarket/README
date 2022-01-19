@@ -1,1 +1,18 @@
-hi
+Steps to deploy flask app on heroku
+first install the pip install gunicorn
+
+then
+pip freeze > requirements.txt
+
+create the Procfile with below line
+web: gunicorn run:app
+
+
+git init
+git commit -m "add comment"
+heroku login
+heroku create any-name
+git push heroku master
+
+This app is already deployed at below location
+https://amit-market-flask.herokuapp.com/
