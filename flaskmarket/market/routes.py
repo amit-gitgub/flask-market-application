@@ -1,7 +1,7 @@
 from market import app
 from flask import render_template, redirect, url_for, flash, get_flashed_messages, request
 from market.models import Items, User
-from market.forms import RegisterForm, LoginForm, PurchaseItemForm
+from market.forms import RegisterForm, LoginForm, PurchaseItemForm, SellItemForm
 from market import db
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -18,6 +18,7 @@ def home_page():
 @login_required
 def market_page():
     purchase_form = PurchaseItemForm()
+    selling_form = SellItemForm()
     if request.method == 'POST':
         item_name = request.form.get('purchased_item')
         item_object = Items.query.filter_by(name=item_name).first()
@@ -29,14 +30,26 @@ def market_page():
                 flash(f'Congrats! You have successfully purchased {item_name} for {item_object.price}$', category='success')
             else:
                 flash(f"Sorry you don't have sufficient money to buy {item_name}.", category='danger')
+
+        # Sell Item logic
+        sold_item = request.form.get('sold_item')
+        s_item_object = Items.query.filter_by(name=sold_item).first()
+        if s_item_object:
+            if current_user.can_sell(s_item_object):
+                s_item_object.sell(current_user)
+                flash(f"Congratulations! You sold {s_item_object.name} back to market!", category='success')
+            else:
+                flash(f"Something went wrong with selling {s_item_object.name}", category='danger')
         return redirect(url_for('market_page'))
+
 
     # If you want to remove the items from the market after purchasing by any owner then enable the below code
     if request.method == 'GET':
         items = Items.query.filter_by(owner=None)
+        owned_items = Items.query.filter_by(owner=current_user.id)
         #items = Items.query.all()
 
-        return render_template('market.html', items=items, purchase_form=purchase_form)
+        return render_template('market.html', items=items, purchase_form=purchase_form, owned_items=owned_items, selling_form=selling_form)
 
 
 @app.route("/register", methods=['GET', 'POST'])
